@@ -365,8 +365,8 @@ sub load_configuration {
         ## no critic(RegularExpressions::ProhibitFixedStringMatches)
         {
             name    => 'allowedIngressSshAlgorithms',
-            default => [qw{ rsa ecdsa ed25519 }],
-            validre => qr/^(rsa|ecdsa|ed25519)$/
+            default => [qw{ rsa ecdsa ed25519 ecdsa-sk }],
+            validre => qr/^(rsa|ecdsa|ed25519|ecdsa-sk)$/
         },
         ## no critic(RegularExpressions::ProhibitFixedStringMatches)
         {
