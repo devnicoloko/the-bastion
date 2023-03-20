@@ -302,7 +302,7 @@ sub get_ssh_pub_key_info {
 
     my ($prefix, $typecode, $base64, $comment);
     if ($pubKey =~
-        m{^\s*((\S+)\s+)?(ssh-dss|ssh-rsa|ecdsa-sha\d+-nistp\d+|ssh-ed\d+)\s+([a-zA-Z0-9/=+]+)(\s+(.{1,128})?)?$}
+        m{^\s*((\S+)\s+)?(ssh-dss|ssh-rsa|ecdsa-sha\d+-nistp\d+|ssh-ed\d+|sk-ecdsa-sha2-nistp256\@openssh.com)\s+([a-zA-Z0-9/=+]+)(\s+(.{1,128})?)?$}
         && length($pubKey) <= 3000)
     {
         ($prefix, $typecode, $base64, $comment) = ($2, $3, $4, $6);
@@ -358,9 +358,10 @@ sub get_ssh_pub_key_info {
 521 af:84:cd:70:34:64:ca:51:b2:17:1a:85:3b:53:2e:52  john@doe (ECDSA)
 1024 c0:4d:f7:bf:55:1f:95:59:be:7e:50:47:e4:81:c3:6a  john@doe (DSA)
 256 SHA256:Yggd7VRRbbivxkdVwrdt0HpqKNylMK91nNIU+RxndTI john@doe (ED25519)
+256 SHA256:YSyIQOkZzP/s0skjHrOQi8zTq+3ecxiRK57/aIsHjfM john@doe (ECDSA-SK)
 =cut
 
-        if (defined $sshkeygen and $sshkeygen =~ /^(\d+)\s+(\S+)\s+(.+)\s+\(([A-Z0-9]+)\)$/) {
+        if (defined $sshkeygen and $sshkeygen =~ /^(\d+)\s+(\S+)\s+(.+)\s+\(([A-Z0-9]+|[A-Z0-9]+-SK)\)$/) {
             my ($size, $fingerprint, $comment2, $family) = ($1, $2, $3, $4);
             $return{'size'}        = $size + 0;
             $return{'fingerprint'} = $fingerprint;
@@ -389,6 +390,9 @@ sub get_ssh_pub_key_info {
             # check allowed algos and key size
             my $allowedSshAlgorithms = OVH::Bastion::config("allowed${way}SshAlgorithms");
             my $minimumRsaKeySize    = OVH::Bastion::config("minimum${way}RsaKeySize");
+	    foreach (@{$allowedSshAlgorithms->value}) {
+		      print "$_\n";
+	    }
             if ($allowedSshAlgorithms && !grep { lc($return{'family'}) eq $_ } @{$allowedSshAlgorithms->value}) {
                 return R('KO_FORBIDDEN_ALGORITHM', value => \%return);
             }
@@ -456,7 +460,7 @@ EOS
         $fnret->{'msg'} = "Unknown error (" . $fnret->msg . "), please report to your sysadmin.";
     }
     else {
-        if (not grep { $fnret->value->{'family'} eq $_ } qw{ RSA ECDSA ED25519 }) {
+        if (not grep { $fnret->value->{'family'} eq $_ } qw{ RSA ECDSA ED25519 ECDSA-SK}) {
             $fnret->{'err'} = 'ERR_UNKNOWN_TYPE';
             $fnret->{'msg'} =
               "Unknown family type (" . $fnret->value->{'family'} . "), please report to your sysadmin.";
