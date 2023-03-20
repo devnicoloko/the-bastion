@@ -390,9 +390,6 @@ sub get_ssh_pub_key_info {
             # check allowed algos and key size
             my $allowedSshAlgorithms = OVH::Bastion::config("allowed${way}SshAlgorithms");
             my $minimumRsaKeySize    = OVH::Bastion::config("minimum${way}RsaKeySize");
-	    foreach (@{$allowedSshAlgorithms->value}) {
-		      print "$_\n";
-	    }
             if ($allowedSshAlgorithms && !grep { lc($return{'family'}) eq $_ } @{$allowedSshAlgorithms->value}) {
                 return R('KO_FORBIDDEN_ALGORITHM', value => \%return);
             }
